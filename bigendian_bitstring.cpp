@@ -1,8 +1,47 @@
-#include "prefix_vector.hpp"
+#include "bigendian_bitstring.hpp"
 
 #include <cstring>
 
 namespace bigendian {
+	bool bitstring::operator[](size_t bit_ndx) const {
+		return 0 != get_bit(bit_ndx);
+	}
+
+	unsigned char bitstring::content_mask(size_t length) {
+		return static_cast<unsigned char>(0xff00u >> (length % 8));
+	}
+
+	void bitstring::set_bitstring(void* data, size_t data_size) const {
+		assert(length*8 < data_size);
+		unsigned char* dest = reinterpret_cast<unsigned char*>(data);
+		size_t const full_bytes = m_length / 8;
+		if (0 != full_bytes) memcpy(dest, m_data, full_bytes);
+		if (full_bytes < data_size) {
+			dest[full_bytes] = fraction_byte();
+			size_t const zero_bytes = (data_size - full_bytes) - 1;
+			memset(dest + full_bytes + 1, 0, zero_bytes);
+		}
+	}
+
+	unsigned char const* bitstring::byte_data() const {
+		return reinterpret_cast<unsigned char const*>(m_data);
+	}
+
+	unsigned char bitstring::get_byte(size_t byte_ndx) const {
+		assert(byte_ndx <= (m_length + 7) / 8);
+		return byte_data()[byte_ndx];
+	}
+
+	unsigned char bitstring::get_bit(size_t bit_ndx) const {
+		assert(bit_ndx <= m_length);
+		return get_byte(bit_ndx / 8) & static_cast<unsigned char>(0x100u >> (bit_ndx % 8));
+	}
+
+	unsigned char bitstring::fraction_byte() const {
+		if (0 == m_length % 8) return 0;
+		return byte_data()[(m_length / 8) + 1] & content_mask(m_length);
+	}
+
 	bool operator==(bitstring const& a, bitstring const& b) {
 		if (a.length() != b.length()) return false;
 		size_t const full_bytes = a.length() / 8;
@@ -70,4 +109,5 @@ namespace bigendian {
 		while (common < min_len && a.get_bit(common) == b.get_bit(common)) ++common;
 		return a.truncate(common);
 	}
+
 }

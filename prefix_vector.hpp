@@ -1,94 +1,14 @@
 #pragma once
 
+#include "iterator_range.hpp"
+
 #include <algorithm>
 #include <functional>
 #include <vector>
 
 #include <cassert>
 
-// a generic iterator range helper
-template<typename Iterator>
-class iterator_range {
-private:
-	Iterator m_begin, m_end;
-public:
-	typedef Iterator iterator_t;
-
-	iterator_range() = default;
-	explicit iterator_range(iterator_t from, iterator_t to)
-	: m_begin(from), m_end(to) {
-	}
-
-	iterator_t begin() const { return m_begin; }
-	iterator_t end() const { return m_end; }
-};
-
-template<typename Iterator>
-iterator_range<Iterator> make_iterator_range(Iterator const& from, Iterator const& to) {
-	return iterator_range<Iterator>(from, to);
-}
-
-// prefix_vector uses an abstract form of "bitstring"s. here is a bigendian bitstring implementation;
-// the first bit in the string is the highest bit (0x80) in the first byte
-// this directly matches network representation of IP addresses
-namespace bigendian {
-	class bitstring {
-	private:
-		void const* m_data{nullptr};
-		size_t m_length{0};
-
-	public:
-		explicit constexpr bitstring() noexcept = default;
-		explicit constexpr bitstring(void const* data, size_t length) noexcept
-		: m_data(data), m_length(length) {
-		}
-
-		static unsigned char content_mask(size_t length) {
-			return static_cast<unsigned char>(0xff00u >> (length % 8));
-		}
-
-		size_t length() const { return m_length; }
-		unsigned char const* byte_data() const { return reinterpret_cast<unsigned char const*>(m_data); }
-
-		unsigned char get_byte(size_t ndx) const {
-			assert(ndx <= (m_length + 7) / 8);
-			return byte_data()[ndx];
-		}
-
-		// returns 0 or the selected bit
-		unsigned char get_bit(size_t ndx) const {
-			assert(ndx <= m_length);
-			return get_byte(ndx / 8) & static_cast<unsigned char>(0x100u >> (ndx % 8));
-		}
-
-		// return bits of last incomplete byte (masks out unused bits);
-		// return 0 if there is no incomplete byte.
-		unsigned char fraction_byte() const {
-			if (0 == m_length % 8) return 0;
-			return byte_data()[(m_length / 8) + 1] & content_mask(m_length);
-		}
-
-		bitstring truncate(size_t length) const {
-			return bitstring(m_data, std::min(length, m_length));
-		}
-	};
-
-	bool operator==(bitstring const& a, bitstring const& b);
-	bool operator!=(bitstring const& a, bitstring const& b);
-
-	// prefix is smaller than string
-	bool is_lexicographic_less(bitstring const& a, bitstring const& b);
-
-	// prefix is between those continuing with 0 and those continuing with 1
-	bool is_tree_less(bitstring const& a, bitstring const& b);
-
-	bool is_prefix(bitstring const& prefix, bitstring const& str);
-
-	// uses data pointer from a for result
-	bitstring longest_common_prefix(bitstring const& a, bitstring const& b);
-}
-
-template<typename Key, typename Value, typename GetBitString>
+template<typename Key, typename Value, typename KeyBitStringTraits>
 class prefix_vector {
 public:
 	typedef Key key_t;
@@ -114,7 +34,7 @@ private:
 	typedef std::vector<inner_element_t> container_t;
 	typedef typename container_t::iterator inner_iterator;
 	typedef typename container_t::const_iterator const_inner_iterator;
-	typedef typename GetBitString::bitstring bitstring;
+	typedef typename KeyBitStringTraits::bitstring bitstring;
 	container_t m_container;
 
 public:
@@ -219,9 +139,12 @@ public:
 	};
 
 private:
-	struct compare_keys {
-		GetBitString getBitString{};
+	static bitstring getBitString(key_t const& key) {
+		KeyBitStringTraits keyBitStringTraits{};
+		return keyBitStringTraits.value_to_bitstring(key);
+	}
 
+	struct compare_keys {
 		bool operator()(inner_element_t const& a, bitstring const& b) {
 			bitstring const a_bitstring = getBitString(a.m_key);
 			return is_lexicographic_less(a_bitstring, b);
@@ -234,7 +157,6 @@ private:
 	};
 
 	struct compare_key_prefix {
-		GetBitString getBitString{};
 		size_t prefixLength;
 
 		explicit compare_key_prefix(key_t const& prefix)
@@ -261,7 +183,6 @@ private:
 	size_t find_ancestor_index(const_inner_iterator pos, key_t const& key) const {
 		if (m_container.empty()) return NO_ANCESTOR;
 
-		GetBitString getBitString{};
 		bitstring const k = getBitString(key);
 
 		size_t current = static_cast<size_t>(pos - m_container.begin());
@@ -293,13 +214,11 @@ private:
 
 	// find node with longest common prefix for key
 	const_inner_iterator lookup(key_t const& key) const {
-		GetBitString getBitString{};
 		const_inner_iterator insert_pos = std::lower_bound(m_container.begin(), m_container.end(), getBitString(key), compare_keys{});
 		return find_ancestor(insert_pos, key);
 	}
 
 	const_inner_iterator lookup_exact(key_t const& key) const {
-		GetBitString getBitString{};
 		bitstring const k = getBitString(key);
 		const_inner_iterator insert_pos = std::lower_bound(m_container.begin(), m_container.end(), k, compare_keys{});
 		if (m_container.end() == insert_pos || k != getBitString(insert_pos->m_key)) return m_container.end();
@@ -307,7 +226,6 @@ private:
 	}
 
 	iterator_range<const_inner_iterator> subtree_range(key_t const& key) const {
-		GetBitString getBitString{};
 		bitstring const k = getBitString(key);
 		compare_key_prefix cmp{key};
 		const_inner_iterator from = std::lower_bound(m_container.begin(), m_container.end(), k, cmp);
@@ -316,7 +234,6 @@ private:
 	}
 
 	std::pair<iterator, bool>  intern_insert(key_t& key, value_t& value, bool overwrite) {
-		GetBitString getBitString{};
 		bitstring const k = getBitString(key);
 
 		inner_iterator pos = std::lower_bound(m_container.begin(), m_container.end(), k, compare_keys{});
@@ -353,8 +270,6 @@ private:
 
 	// erase element at given position; return iterator for the (previously) following entry
 	inner_iterator intern_erase(inner_iterator pos) {
-		GetBitString getBitString{};
-
 		size_t old_index = static_cast<size_t>(pos - m_container.begin());
 		size_t ancestor_index = pos->m_ancestor;
 		bitstring const k = getBitString(pos->m_key);

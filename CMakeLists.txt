@@ -25,7 +25,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_EXTRA_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXTRA_EXE_LINKER_FLAGS}")
 
 add_executable(test_prefix_vector
-	prefix_vector.cpp
+	bigendian_bitstring.cpp
+	bigendian_bitstring.hpp
+
+	bitstring.hpp
+
+	ipv4_network.cpp
+	ipv4_network.hpp
+
+	iterator_range.hpp
+
 	prefix_vector.hpp
 
 	test_prefix_vector.cpp
