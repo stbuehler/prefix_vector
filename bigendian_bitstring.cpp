@@ -12,7 +12,7 @@ namespace bigendian {
 	}
 
 	void bitstring::set_bitstring(void* data, size_t data_size) const {
-		assert(length*8 < data_size);
+		assert(m_length*8 < data_size);
 		unsigned char* dest = reinterpret_cast<unsigned char*>(data);
 		size_t const full_bytes = m_length / 8;
 		if (0 != full_bytes) memcpy(dest, m_data, full_bytes);
