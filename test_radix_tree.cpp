@@ -22,9 +22,13 @@ void run_ipv4_network() {
 	std::cout << *routing_table.value(loopback) << "\n";
 	std::cout << *routing_table.value(null) << "\n";
 
-//	for (auto const& elem: routing_table.subkeys(loopback_net)) {
-//		std::cout << "subkey: " << to_string(elem.key()) << ": " << elem.value() << "\n";
-//	}
+	for (auto const& elem: routing_table) {
+		std::cout << "entry: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+	}
+
+	for (auto const& elem: routing_table.find_all(loopback_net)) {
+		std::cout << "subkey: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+	}
 
 	decltype(routing_table) const& const_routing_table{routing_table};
 
@@ -33,9 +37,13 @@ void run_ipv4_network() {
 	std::cout << *const_routing_table.value(loopback) << "\n";
 	std::cout << *const_routing_table.value(null) << "\n";
 
-//	for (auto const& elem: const_routing_table.subkeys(loopback_net)) {
-//		std::cout << "subkey: " << to_string(elem.key()) << ": " << elem.value() << "\n";
-//	}
+	for (auto const& elem: const_routing_table) {
+		std::cout << "entry: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+	}
+
+	for (auto const& elem: const_routing_table.find_all(loopback_net)) {
+		std::cout << "subkey: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+	}
 
 	using std::swap;
 	decltype(routing_table) other_routing_table;
@@ -64,6 +72,9 @@ struct my_ipv4_network_bitstring_traits {
 		return result;
 	}
 };
+std::string to_string(my_ipv4_network const& val) {
+	return to_string(ipv4_network(val.addr, val.prefix));
+}
 
 template class radix_tree<my_ipv4_network, uint32_t, my_ipv4_network_bitstring_traits>;
 
@@ -82,9 +93,13 @@ void run_my_ipv4_network() {
 	std::cout << *routing_table.value(loopback) << "\n";
 	std::cout << *routing_table.value(null) << "\n";
 
-//	for (auto const& elem: routing_table.subkeys(loopback_net)) {
-//		std::cout << "subkey: " << to_string(elem.key()) << ": " << elem.value() << "\n";
-//	}
+	for (auto const& elem: routing_table) {
+		std::cout << "entry: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+	}
+
+	for (auto const& elem: routing_table.find_all(loopback_net)) {
+		std::cout << "subkey: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+	}
 
 	decltype(routing_table) const& const_routing_table{routing_table};
 
@@ -93,9 +108,13 @@ void run_my_ipv4_network() {
 	std::cout << *const_routing_table.value(loopback) << "\n";
 	std::cout << *const_routing_table.value(null) << "\n";
 
-//	for (auto const& elem: const_routing_table.subkeys(loopback_net)) {
-//		std::cout << "subkey: " << to_string(elem.key()) << ": " << elem.value() << "\n";
-//	}
+	for (auto const& elem: const_routing_table) {
+		std::cout << "entry: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+	}
+
+	for (auto const& elem: const_routing_table.find_all(loopback_net)) {
+		std::cout << "subkey: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+	}
 
 	using std::swap;
 	decltype(routing_table) other_routing_table;
