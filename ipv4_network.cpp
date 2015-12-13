@@ -60,9 +60,24 @@ bool is_prefix(ipv4_network_bitstring const& prefix, ipv4_network_bitstring cons
 	return prefix == str.truncate(prefix.length());
 }
 
+#if !defined(__has_builtin)
+# define __has_builtin(x) 0
+#endif
+
 ipv4_network_bitstring longest_common_prefix(ipv4_network_bitstring const& a, ipv4_network_bitstring const& b) {
-	uint32_t native_common_bits = ntohl(~(a.value.address() ^ b.value.address()) & ipv4_network::netmask(std::min(a.value.network(), b.value.network())));
-	unsigned char length = 0;
+	uint32_t native_uncommon_bits = ntohl((a.value.address() ^ b.value.address()) | ipv4_network::hostmask(std::min(a.value.network(), b.value.network())));
+#if defined(__GNUC__) || (__has_builtin(__builtin_clz) && __has_builtin(__builtin_clzl))
+	size_t length;
+	if (sizeof(unsigned int) >= sizeof(uint32_t)) {
+		length = static_cast<size_t>(__builtin_clz(native_uncommon_bits)) - 8*(sizeof(unsigned int) - sizeof(uint32_t));
+	} else {
+		static_assert(sizeof(unsigned long) >= sizeof(uint32_t), "sizeof(unsigned long) violates standard requirements");
+		length = static_cast<size_t>(__builtin_clzl(native_uncommon_bits)) - 8*(sizeof(unsigned long) - sizeof(uint32_t));
+	}
+#else
+	uint32_t native_common_bits = ~native_uncommon_bits;
+	size_t length = 0;
 	for (uint32_t native_bit = uint32_t{1} << 31; 0 != (native_bit & native_common_bits); native_bit >>= 1, ++length) ;
+#endif
 	return a.truncate(length);
 }

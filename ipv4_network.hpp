@@ -16,9 +16,8 @@ private:
 
 public:
 	static uint32_t hostmask(unsigned char network) {
-		if (network >= 32) return uint32_t{0};
-		if (network == 0) return ~uint32_t{0};
-		return htonl((uint32_t{1} << (32 - network)) - 1);
+		if (network >= 32) network = 32;
+		return htonl(static_cast<uint32_t>((uint64_t{1} << (32u - network)) - 1u));
 	}
 
 	static uint32_t netmask(unsigned char network) {
