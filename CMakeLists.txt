@@ -24,7 +24,7 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_EXTRA_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXTRA_EXE_LINKER_FLAGS}")
 
-add_executable(test_prefix_vector
+add_library(common OBJECT
 	bigendian_bitstring.cpp
 	bigendian_bitstring.hpp
 
@@ -34,6 +34,18 @@ add_executable(test_prefix_vector
 	ipv4_network.hpp
 
 	iterator_range.hpp
+)
+
+add_executable(test_radix_tree
+	$<TARGET_OBJECTS:common>
+
+	radix_tree.hpp
+
+	test_radix_tree.cpp
+	)
+
+add_executable(test_prefix_vector
+	$<TARGET_OBJECTS:common>
 
 	prefix_vector.hpp
 
