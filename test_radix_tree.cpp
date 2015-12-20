@@ -8,15 +8,29 @@
 #include <netinet/ip6.h>
 
 void run_ipv4_network() {
-	radix_tree<ipv4_network, uint32_t, ipv4_network_bitstring_traits> routing_table;
+	{
+		radix_tree<ipv4_network, std::string, ipv4_network_bitstring_traits> routing_table;
+		routing_table.insert_or_assign(ipv4_network(htonl(0x0a000100u), 24), "1");
+		routing_table.insert_or_assign(ipv4_network(htonl(0x0a000200u), 24), "2");
+		routing_table.insert_or_assign(ipv4_network(htonl(0x0a000300u), 24), "3");
+		routing_table.insert_or_assign(ipv4_network(htonl(0x0a000400u), 24), "4");
+		routing_table.insert_or_assign(ipv4_network(htonl(0x0a000500u), 24), "5");
+
+		for (auto const& elem: routing_table) {
+			std::cout << "entry: " << to_string(elem.key()) << ": " << elem.value() << "\n";
+		}
+		exit(0);
+	}
+
+	radix_tree<ipv4_network, std::string, ipv4_network_bitstring_traits> routing_table;
 	ipv4_network any{0, 0};
 	ipv4_network loopback_net{ htonl(INADDR_LOOPBACK), 8 };
 	ipv4_network loopback{ htonl(INADDR_LOOPBACK), 32 };
 	ipv4_network null{0, 32};
 
-	routing_table.insert_or_assign(any, 20);
-	routing_table.insert(any, 20);
-	routing_table.insert_or_assign(loopback_net, 10);
+	std::cout << routing_table.insert(any, "15").first->value() << "\n";
+	routing_table.insert_or_assign(any, "20");
+	routing_table.insert_or_assign(loopback_net, "10");
 
 	std::cout << *routing_table.value(any) << "\n";
 	std::cout << *routing_table.value(loopback_net) << "\n";
