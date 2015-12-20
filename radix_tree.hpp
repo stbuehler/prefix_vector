@@ -250,7 +250,7 @@ private:
 				return insert_pos->get();
 			}
 			bitstring const insert_pos_key_bs = key_to_bs((*insert_pos)->m_key);
-			if (is_prefix(key_to_bs((*insert_pos)->m_key), key_bs)) {
+			if (is_prefix(insert_pos_key_bs, key_bs)) {
 				if (insert_pos_key_bs == key_bs) {
 					// found an exact match
 					return insert_pos->get();

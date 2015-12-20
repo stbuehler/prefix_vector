@@ -39,7 +39,7 @@ namespace bigendian {
 
 	unsigned char bitstring::fraction_byte() const {
 		if (0 == m_length % 8) return 0;
-		return byte_data()[(m_length / 8) + 1] & content_mask(m_length);
+		return byte_data()[(m_length / 8)] & content_mask(m_length);
 	}
 
 	bool operator==(bitstring const& a, bitstring const& b) {
