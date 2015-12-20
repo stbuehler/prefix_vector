@@ -376,6 +376,7 @@ public:
 		node* n = intern_insert(key);
 		if (n->m_value) return std::make_pair(iterator(n, m_root.get()), false);
 		n->m_value.reset(new value_t(std::forward<ValueArg>(value)));
+		return std::make_pair(iterator(n, m_root.get()), true);
 	}
 
 	template<typename ValueArg>

@@ -15,6 +15,7 @@ void run_ipv4_network() {
 	ipv4_network null{0, 32};
 
 	routing_table.insert_or_assign(any, 20);
+	routing_table.insert(any, 20);
 	routing_table.insert_or_assign(loopback_net, 10);
 
 	std::cout << *routing_table.value(any) << "\n";
