@@ -34,7 +34,7 @@ namespace bigendian {
 
 	unsigned char bitstring::get_bit(size_t bit_ndx) const {
 		assert(bit_ndx <= m_length);
-		return get_byte(bit_ndx / 8) & static_cast<unsigned char>(0x100u >> (bit_ndx % 8));
+		return get_byte(bit_ndx / 8) & static_cast<unsigned char>(0x80u >> (bit_ndx % 8));
 	}
 
 	unsigned char bitstring::fraction_byte() const {
