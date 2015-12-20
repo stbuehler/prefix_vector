@@ -101,12 +101,13 @@ public:
 					// reached bottom. go up again
 					for (;;) {
 						Node* prev = m_node;
-						m_node = m_node->m_parent;
 						if (m_root == m_node) {
 							m_node = nullptr;
 							return; // reached end of tree
 						}
-						assert(!m_node);
+						m_node = m_node->m_parent;
+						// previous node wasn't root, so there must have been a parent
+						assert(m_node);
 						// when we walk up and came through the left link, and the right link has a node,
 						// walk down the right link
 						if (m_node->m_left.get() == prev && m_node->m_right) {
