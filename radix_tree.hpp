@@ -265,6 +265,8 @@ private:
 			} else {
 				// need to split insert_pos
 				bitstring common_prefix_bs = longest_common_prefix(insert_pos_key_bs, key_bs);
+				assert(is_prefix(common_prefix_bs, insert_pos_key_bs));
+				assert(is_prefix(common_prefix_bs, key_bs));
 				assert(common_prefix_bs.length() < insert_pos_key_bs.length());
 				if (common_prefix_bs.length() == key_bs.length()) {
 					// key_bs is a prefix of insert_pos_key_bs, insert between
