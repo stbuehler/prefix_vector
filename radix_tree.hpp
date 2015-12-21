@@ -375,8 +375,7 @@ private:
 		}
 
 		size_wrapper_type& operator=(size_wrapper_type const& other) = default;
-		size_wrapper_type& operator=(size_wrapper_type&& other)
-		{
+		size_wrapper_type& operator=(size_wrapper_type&& other) {
 			m_value = other.m_value;
 			other.m_value = 0;
 			return *this;
