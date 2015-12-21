@@ -16,10 +16,10 @@ void run_ipv4_network() {
 		routing_table.insert_or_assign(ipv4_network(htonl(0x0a000400u), 24), "4");
 		routing_table.insert_or_assign(ipv4_network(htonl(0x0a000500u), 24), "5");
 
+		std::cout << "size: " << routing_table.size() << "\n";
 		for (auto const& elem: routing_table) {
 			std::cout << "entry: " << to_string(elem.key()) << ": " << elem.value() << "\n";
 		}
-		exit(0);
 	}
 
 	radix_tree<ipv4_network, std::string, ipv4_network_bitstring_traits> routing_table;
@@ -37,6 +37,7 @@ void run_ipv4_network() {
 	std::cout << *routing_table.value(loopback) << "\n";
 	std::cout << *routing_table.value(null) << "\n";
 
+	std::cout << "size: " << routing_table.size() << "\n";
 	for (auto const& elem: routing_table) {
 		std::cout << "entry: " << to_string(elem.key()) << ": " << elem.value() << "\n";
 	}
