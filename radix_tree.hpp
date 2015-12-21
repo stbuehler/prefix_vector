@@ -70,6 +70,10 @@ public:
 				base_iterator(nullptr, m_node, no_init_walk{}));
 		}
 
+		explicit operator bool() const {
+			return bool(m_node);
+		}
+
 	private:
 		friend class radix_tree;
 		friend class boost::iterator_core_access;
