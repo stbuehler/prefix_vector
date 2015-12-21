@@ -504,6 +504,10 @@ public:
 		return next;
 	}
 
+	void clear() {
+		*this = radix_tree();
+	}
+
 	bool empty() const {
 		return 0 == m_size.m_value;
 	}
@@ -518,4 +522,11 @@ public:
 	const_iterator end() const { return const_iterator(nullptr, m_root.get()); }
 	const_iterator cbegin() const { return const_iterator(m_root.get(), m_root.get()); }
 	const_iterator cend() const { return const_iterator(nullptr, m_root.get()); }
+
+	/** swap content of two trees */
+	friend void swap(radix_tree& a, radix_tree& b) {
+		using std::swap;
+		swap(a.m_size, b.m_size);
+		swap(a.m_root, b.m_root);
+	}
 };
