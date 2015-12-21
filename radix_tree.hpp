@@ -343,6 +343,7 @@ private:
 	}
 
 	void intern_remove(node* pos) {
+		if (pos->m_value) --m_size;
 		pos->m_value.reset();
 		merge(pos);
 	}
@@ -362,6 +363,38 @@ private:
 		return make_iterator_range(iterator(n, n), iterator(nullptr, n));
 	}
 
+	// implement copy + move semantics for size_t: move resets source size
+	struct size_wrapper_type {
+		size_t m_value{0};
+
+		size_wrapper_type() = default;
+		size_wrapper_type(size_wrapper_type const& other) = default;
+		size_wrapper_type(size_wrapper_type&& other)
+		: m_value(other.m_value) {
+			other.m_value = 0;
+		}
+
+		size_wrapper_type& operator=(size_wrapper_type const& other) = default;
+		size_wrapper_type& operator=(size_wrapper_type&& other)
+		{
+			m_value = other.m_value;
+			other.m_value = 0;
+			return *this;
+		}
+
+		size_wrapper_type& operator++() {
+			++m_value;
+			return *this;
+		}
+
+		size_wrapper_type& operator--() {
+			--m_value;
+			return *this;
+		}
+	};
+
+	size_wrapper_type m_size;
+
 public:
 	radix_tree() = default;
 	radix_tree(radix_tree const& other)
@@ -379,6 +412,7 @@ public:
 		node* n = intern_insert(key);
 		if (n->m_value) return std::make_pair(iterator(n, m_root.get()), false);
 		n->m_value.reset(new value_t(std::forward<ValueArg>(value)));
+		++m_size;
 		return std::make_pair(iterator(n, m_root.get()), true);
 	}
 
@@ -390,6 +424,7 @@ public:
 			return std::make_pair(iterator(n, m_root.get()), false);
 		} else {
 			n->m_value.reset(new value_t(std::forward<ValueArg>(value)));
+			++m_size;
 			return std::make_pair(iterator(n, m_root.get()), true);
 		}
 	}
@@ -464,6 +499,14 @@ public:
 			}
 		}
 		return next;
+	}
+
+	bool empty() const {
+		return 0 == m_size.m_value;
+	}
+
+	size_t size() const {
+		return m_size.m_value;
 	}
 
 	iterator begin() { return iterator(m_root.get(), m_root.get()); }
