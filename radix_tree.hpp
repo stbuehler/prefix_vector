@@ -1,12 +1,11 @@
 #pragma once
 
-#include "iterator_range.hpp"
-
 #include <memory>
 
 #include <cassert>
 
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/range/iterator_range.hpp>
 
 template<typename Key, typename Value, typename KeyBitStringTraits>
 class radix_tree
@@ -64,8 +63,8 @@ public:
 		: m_node(other.m_node), m_root(other.m_root) {
 		}
 
-		iterator_range<base_iterator> subtree() const {
-			return make_iterator_range(
+		boost::iterator_range<base_iterator> subtree() const {
+			return boost::make_iterator_range(
 				base_iterator(m_node, m_node, no_init_walk{}),
 				base_iterator(nullptr, m_node, no_init_walk{}));
 		}
@@ -359,12 +358,12 @@ private:
 		return 1;
 	}
 
-	iterator_range<const_iterator> subtree(node* n) const {
-		return make_iterator_range(const_iterator(n, n), const_iterator(nullptr, n));
+	boost::iterator_range<const_iterator> subtree(node* n) const {
+		return boost::make_iterator_range(const_iterator(n, n), const_iterator(nullptr, n));
 	}
 
-	iterator_range<iterator> subtree(node* n) {
-		return make_iterator_range(iterator(n, n), iterator(nullptr, n));
+	boost::iterator_range<iterator> subtree(node* n) {
+		return boost::make_iterator_range(iterator(n, n), iterator(nullptr, n));
 	}
 
 	// implement copy + move semantics for size_t: move resets source size
@@ -448,11 +447,11 @@ public:
 		return iterator(intern_exact_lookup(key), m_root.get());
 	}
 
-	iterator_range<const_iterator> find_all(key_t const& key) const {
+	boost::iterator_range<const_iterator> find_all(key_t const& key) const {
 		return subtree(intern_lookup_parent(key));
 	}
 
-	iterator_range<iterator> find_all(key_t const& key) {
+	boost::iterator_range<iterator> find_all(key_t const& key) {
 		return subtree(intern_lookup_parent(key));
 	}
 
